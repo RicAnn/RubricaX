@@ -1,5 +1,5 @@
 # Use Eclipse Temurin (more secure and maintained alternative)
-FROM eclipse-temurin:21-jdk-jammy
+FROM eclipse-temurin:25-jdk-jammy
 
 # Install required packages for GUI applications
 RUN apt-get update && apt-get install -y \
