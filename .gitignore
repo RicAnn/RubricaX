@@ -6,6 +6,7 @@
 # Directory di build
 bin/
 target/
+build/
 
 # IDE files
 .vscode/
@@ -23,6 +24,11 @@ Thumbs.db
 *.temp
 *.log
 
+# Test and security scan results
+trivy-results.sarif
+test-results/
+coverage/
+
 # Documentation generated files (keep source)
 docs/package-list
 docs/allclasses-index.html
@@ -37,3 +43,6 @@ docs/constant-values.html
 *.bak
 *.backup
 *~
+
+# Docker
+.dockerignore

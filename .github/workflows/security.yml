@@ -1,0 +1,59 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+    
+    - name: Compile Java files
+      run: |
+        mkdir -p bin
+        javac -d bin src/*.java
+    
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/init@v3
+      with:
+        languages: java
+    
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+    
+    - name: Build Docker image for security scan
+      run: |
+        docker build -t rubricax:test .
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'rubricax:test'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'

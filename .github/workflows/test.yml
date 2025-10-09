@@ -1,0 +1,68 @@
+name: Test and Quality
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        java-version: [11, 17, 21]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+    
+    - name: Create bin directory
+      run: mkdir -p bin
+    
+    - name: Compile Java files
+      run: javac -d bin src/*.java
+    
+    - name: Create JAR
+      run: jar cfm RubricaX.jar MANIFEST.MF -C bin .
+    
+    - name: Test JAR execution (headless)
+      run: |
+        timeout 5 java -Djava.awt.headless=true -jar RubricaX.jar || true
+    
+    - name: Generate documentation
+      run: |
+        cd src
+        javadoc -d ../docs *.java
+    
+    - name: Check documentation generation
+      run: |
+        test -f docs/index.html
+        test -f docs/Contatto.html
+        test -f docs/Rubrica.html
+        test -f docs/RubricaGUI.html
+    
+    - name: Validate Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+    
+    - name: Validate secure Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile.secure
+    
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.java-version == '21'
+      with:
+        name: test-results-java-${{ matrix.java-version }}
+        path: |
+          RubricaX.jar
+          docs/

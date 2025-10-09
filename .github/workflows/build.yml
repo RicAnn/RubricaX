@@ -10,14 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write
+      packages: write
+    
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up JDK 21
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
+    
+    - name: Create bin directory
+      run: mkdir -p bin
     
     - name: Compile Java files
       run: javac -d bin src/*.java
@@ -31,35 +38,44 @@ jobs:
         javadoc -d ../docs *.java
     
     - name: Upload JAR as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RubricaX-JAR
         path: RubricaX.jar
     
     - name: Upload documentation
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RubricaX-Docs
         path: docs/
     
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-        
-    - name: Upload Release Asset
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./RubricaX.jar
-        asset_name: RubricaX.jar
-        asset_content_type: application/java-archive
+        files: |
+          RubricaX.jar
+        body: |
+          ## RubricaX ${{ github.ref_name }}
+          
+          ### 📦 Download
+          - **RubricaX.jar** - Applicazione eseguibile
+          
+          ### 🚀 Come usare
+          ```bash
+          java -jar RubricaX.jar
+          ```
+          
+          ### 📋 Requisiti
+          - Java 11 o superiore
+          
+          ### 🔧 Novità in questa versione
+          - Correzioni di sicurezza Docker
+          - Documentazione aggiornata
+          - Build automatico migliorato
