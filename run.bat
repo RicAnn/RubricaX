@@ -1,0 +1,3 @@
+@echo off
+echo Starting RubricaX...
+java -jar RubricaX.jar

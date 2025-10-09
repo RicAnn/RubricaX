@@ -1,0 +1,39 @@
+# File binari
+*.class
+*.jar
+!RubricaX.jar
+
+# Directory di build
+bin/
+target/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Documentation generated files (keep source)
+docs/package-list
+docs/allclasses-index.html
+docs/allpackages-index.html
+docs/index-all.html
+docs/overview-tree.html
+docs/package-summary.html
+docs/package-tree.html
+docs/constant-values.html
+
+# Backup files
+*.bak
+*.backup
+*~
