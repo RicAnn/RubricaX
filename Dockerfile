@@ -27,6 +27,9 @@ WORKDIR /app
 COPY --chown=appuser:appuser src/ src/
 COPY --chown=appuser:appuser MANIFEST.MF .
 
+# Create bin directory with proper permissions
+RUN mkdir -p bin && chown -R appuser:appuser .
+
 # Switch to non-root user
 USER appuser
 
@@ -34,8 +37,8 @@ USER appuser
 RUN javac -d bin src/*.java && \
     jar cfm RubricaX.jar MANIFEST.MF -C bin .
 
-# Create display script for X11 forwarding
-RUN echo '#!/bin/bash\nif [ -z "$DISPLAY" ]; then\n    export DISPLAY=:99\n    Xvfb :99 -screen 0 1024x768x24 &\nfi\njava -jar RubricaX.jar' > start.sh && \
+# Create display script for X11 forwarding and headless mode
+RUN echo '#!/bin/bash\nif [ -z "$DISPLAY" ]; then\n    echo "Running in headless mode..."\n    java -Djava.awt.headless=true -jar RubricaX.jar\nelse\n    echo "Running with GUI..."\n    Xvfb :99 -screen 0 1024x768x24 &\n    export DISPLAY=:99\n    java -jar RubricaX.jar\nfi' > start.sh && \
     chmod +x start.sh
 
 # Expose port for potential web interface (future feature)
