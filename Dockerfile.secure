@@ -1,0 +1,34 @@
+# Alternative secure Dockerfile using distroless
+# This provides a minimal attack surface
+FROM maven:3.9-eclipse-temurin-21 AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy source files
+COPY src/ src/
+COPY MANIFEST.MF .
+
+# Compile and package
+RUN javac -d bin src/*.java && \
+    jar cfm RubricaX.jar MANIFEST.MF -C bin .
+
+# Runtime stage with distroless (most secure)
+FROM gcr.io/distroless/java21:nonroot
+
+# Copy only the JAR file
+COPY --from=builder /app/RubricaX.jar /app/RubricaX.jar
+
+# Set working directory
+WORKDIR /app
+
+# Run as non-root user (already set by distroless:nonroot)
+USER nonroot
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD ["java", "-version"] || exit 1
+
+# Note: This version is for headless mode only
+# For GUI applications, use the main Dockerfile
+ENTRYPOINT ["java", "-jar", "RubricaX.jar"]

@@ -1,7 +1,7 @@
-# Use OpenJDK with GUI support
-FROM openjdk:21-jdk-slim
+# Use Eclipse Temurin (more secure and maintained alternative)
+FROM eclipse-temurin:21-jdk-jammy
 
-# Install required packages for GUI
+# Install required packages for GUI applications
 RUN apt-get update && apt-get install -y \
     libxtst6 \
     libxrandr2 \
@@ -13,21 +13,37 @@ RUN apt-get update && apt-get install -y \
     libgdk-pixbuf2.0-0 \
     libxss1 \
     libgconf-2-4 \
-    && rm -rf /var/lib/apt/lists/*
+    xvfb \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 # Set working directory
 WORKDIR /app
 
-# Copy source files
-COPY src/ src/
-COPY MANIFEST.MF .
+# Copy source files and change ownership
+COPY --chown=appuser:appuser src/ src/
+COPY --chown=appuser:appuser MANIFEST.MF .
+
+# Switch to non-root user
+USER appuser
 
 # Compile and package
 RUN javac -d bin src/*.java && \
     jar cfm RubricaX.jar MANIFEST.MF -C bin .
 
-# Set display for X11 forwarding
-ENV DISPLAY=:0
+# Create display script for X11 forwarding
+RUN echo '#!/bin/bash\nif [ -z "$DISPLAY" ]; then\n    export DISPLAY=:99\n    Xvfb :99 -screen 0 1024x768x24 &\nfi\njava -jar RubricaX.jar' > start.sh && \
+    chmod +x start.sh
+
+# Expose port for potential web interface (future feature)
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD pgrep -f "java.*RubricaX" > /dev/null || exit 1
 
 # Run the application
-CMD ["java", "-jar", "RubricaX.jar"]
+CMD ["./start.sh"]

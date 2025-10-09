@@ -1,0 +1,25 @@
+# Docker Compose per testing locale
+version: '3.8'
+
+services:
+  rubricax-gui:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rubricax-gui
+    environment:
+      - DISPLAY=${DISPLAY:-:0}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    network_mode: host
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    
+  rubricax-headless:
+    build:
+      context: .
+      dockerfile: Dockerfile.secure
+    container_name: rubricax-headless
+    restart: unless-stopped
+    # Useful for future API or web interface features
