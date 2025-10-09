@@ -1,6 +1,6 @@
 # Alternative secure Dockerfile using distroless
 # This provides a minimal attack surface
-FROM maven:3.9-eclipse-temurin-21 AS builder
+FROM maven:3-eclipse-temurin-25 AS builder
 
 # Set working directory
 WORKDIR /app
