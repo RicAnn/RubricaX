@@ -19,7 +19,7 @@ public class Main {
         }
         
         // Esegue l'applicazione GUI nel thread di Event Dispatch
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() { 
             @Override
             public void run() {
                 try {
