@@ -35,9 +35,6 @@ jobs:
       with:
         languages: java
     
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
-    
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
     
@@ -52,6 +49,11 @@ jobs:
         format: 'sarif'
         output: 'trivy-results.sarif'
     
+    - name: Debug Trivy output
+      run: |
+        ls -l trivy-results.sarif || echo "File trivy-results.sarif NON trovato"
+        cat trivy-results.sarif || echo "File vuoto o non leggibile"
+
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
       if: always()
